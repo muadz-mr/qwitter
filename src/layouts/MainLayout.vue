@@ -4,16 +4,24 @@
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="left = !left" />
 
-        <q-toolbar-title class="text-weight-bold"> Qwitter </q-toolbar-title>
+        <q-toolbar-title class="text-weight-bold">
+          <span class="gt-sm">Qwitter</span>
+          <q-icon
+            class="q-pa-md lt-md header-icon"
+            name="fa-solid fa-dove"
+            size="xs"
+            color="primary"
+          />
+        </q-toolbar-title>
       </q-toolbar>
     </q-header>
 
     <q-drawer show-if-above v-model="left" side="left" :width="283" bordered>
       <q-icon
+        class="q-pa-md"
         name="fa-solid fa-dove"
         size="md"
         color="primary"
-        class="q-pa-md"
       />
 
       <q-list>
@@ -118,3 +126,12 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.header-icon {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+</style>
