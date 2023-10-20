@@ -104,25 +104,23 @@
 </template>
 
 <script>
+import db from "src/boot/firebase";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+} from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 
 export default {
   name: "PageHome",
   data() {
     return {
+      unsubscribe: null,
       newQweetContent: "",
-      qweets: [
-        {
-          content:
-            "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ipsaprovident labore assumenda voluptatibus expedita?",
-          date: 1696840019273,
-        },
-        {
-          content:
-            "Deleniti unde quos saepe voluptates totam dolore asperiores earum praesentium ipsum cum ad numquam magnam sequi cumque, ut, debitis laborum, distinctio doloribus optio molestiae quaerat tempora. Non iusto nemo natus recusandae quia necessitatibus illo voluptas consequuntur.",
-          date: 1696840094859,
-        },
-      ],
+      qweets: [],
     };
   },
   filters: {
@@ -143,6 +141,34 @@ export default {
     deleteQweet(key) {
       this.qweets.splice(key, 1);
     },
+  },
+  mounted() {
+    const q = query(collection(db, "qweets"), orderBy("date"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          let qweetChange = change.doc.data();
+
+          if (change.type === "added") {
+            console.log("New qweet: ", change.doc.data());
+            this.qweets.unshift(qweetChange);
+          }
+          if (change.type === "modified") {
+            console.log("Modified qweet: ", change.doc.data());
+          }
+          if (change.type === "removed") {
+            console.log("Removed qweet: ", change.doc.data());
+          }
+        });
+      },
+      (error) => {}
+    );
+
+    this.unsubscribe = unsubscribe;
+  },
+  beforeDestroy() {
+    this.unsubscribe();
   },
 };
 </script>
