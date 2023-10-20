@@ -111,6 +111,7 @@ import {
   where,
   onSnapshot,
   orderBy,
+  addDoc,
 } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 
@@ -129,13 +130,19 @@ export default {
     },
   },
   methods: {
-    addNewQweet() {
+    async addNewQweet() {
       if (!this.newQweetContent) return;
       let newQweet = {
         content: this.newQweetContent,
         date: Date.now(),
       };
-      this.qweets.unshift(newQweet);
+
+      try {
+        const docRef = await addDoc(collection(db, "qweets"), newQweet);
+      } catch (error) {
+        console.log(error);
+      }
+
       this.newQweetContent = "";
     },
     deleteQweet(key) {
