@@ -41,11 +41,7 @@
           enter-active-class="animated fadeInDown"
           leave-active-class="animated fadeOutLeft"
         >
-          <q-item
-            class="qweet q-py-md"
-            v-for="(qweet, index) in qweets"
-            :key="qweet.date"
-          >
+          <q-item class="qweet q-py-md" v-for="qweet in qweets" :key="qweet.id">
             <q-item-section avatar top>
               <q-avatar>
                 <img src="https://cdn.quasar.dev/img/avatar4.jpg" />
@@ -87,7 +83,7 @@
                   icon="fa-regular fa-heart"
                 />
                 <q-btn
-                  @click="deleteQweet(index)"
+                  @click="deleteQweet(qweet.id)"
                   flat
                   round
                   size="sm"
@@ -108,10 +104,11 @@ import db from "src/boot/firebase";
 import {
   collection,
   query,
-  where,
   onSnapshot,
   orderBy,
+  doc,
   addDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 
@@ -140,13 +137,17 @@ export default {
       try {
         const docRef = await addDoc(collection(db, "qweets"), newQweet);
       } catch (error) {
-        console.log(error);
+        console.error("Error adding data: ", error);
       }
 
       this.newQweetContent = "";
     },
-    deleteQweet(key) {
-      this.qweets.splice(key, 1);
+    async deleteQweet(id) {
+      try {
+        await deleteDoc(doc(db, "qweets", id));
+      } catch (error) {
+        console.error("Error removing data: ", error);
+      }
     },
   },
   mounted() {
@@ -156,20 +157,27 @@ export default {
       (snapshot) => {
         snapshot.docChanges().forEach((change) => {
           let qweetChange = change.doc.data();
+          qweetChange["id"] = change.doc.id;
 
           if (change.type === "added") {
-            console.log("New qweet: ", change.doc.data());
+            console.log("New qweet: ", qweetChange);
             this.qweets.unshift(qweetChange);
           }
           if (change.type === "modified") {
-            console.log("Modified qweet: ", change.doc.data());
+            console.log("Modified qweet: ", qweetChange);
           }
           if (change.type === "removed") {
-            console.log("Removed qweet: ", change.doc.data());
+            console.log("Removed qweet: ", qweetChange);
+            const index = this.qweets.findIndex(
+              (qweet) => qweet.id === qweetChange.id
+            );
+            this.qweets.splice(index, 1);
           }
         });
       },
-      (error) => {}
+      (error) => {
+        console.error("Error when getting snapshot: ", error);
+      }
     );
 
     this.unsubscribe = unsubscribe;
