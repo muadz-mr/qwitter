@@ -20,25 +20,25 @@
       <q-icon
         class="q-pa-md"
         name="fa-solid fa-dove"
-        size="md"
+        size="sm"
         color="primary"
       />
 
       <q-list>
         <q-item to="/" exact clickable v-ripple>
           <q-item-section avatar>
-            <q-icon name="home" size="md" />
+            <q-icon name="home" size="sm" />
           </q-item-section>
 
-          <q-item-section class="text-h6">Home</q-item-section>
+          <q-item-section class="text-body1 text-weight-medium">Home</q-item-section>
         </q-item>
 
         <q-item to="/about" exact clickable v-ripple>
           <q-item-section avatar>
-            <q-icon name="help" size="md" />
+            <q-icon name="help" size="sm" />
           </q-item-section>
 
-          <q-item-section class="text-h6">About</q-item-section>
+          <q-item-section class="text-body1 text-weight-medium">About</q-item-section>
         </q-item>
       </q-list>
     </q-drawer>
@@ -111,7 +111,9 @@
     </q-drawer>
 
     <q-page-container>
-      <router-view />
+      <keep-alive>
+        <router-view />
+      </keep-alive>
     </q-page-container>
   </q-layout>
 </template>

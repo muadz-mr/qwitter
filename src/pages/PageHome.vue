@@ -1,6 +1,6 @@
 <template>
   <q-page class="relative-position">
-    <q-scroll-area class="absolute-full">
+    <q-scroll-area class="absolute full-height full-width">
       <div class="q-py-lg q-px-md row q-col-gutter-md items-end">
         <div class="col">
           <q-input
@@ -10,10 +10,11 @@
             maxlength="280"
             bottom-slots
             autogrow
-            :input-style="{ fontSize: '19px', lineHeight: '1.4' }"
+            dense
+            :input-style="{ fontSize: '16px', lineHeight: '1.4' }"
           >
             <template v-slot:before>
-              <q-avatar size="xl">
+              <q-avatar size="lg" class="q-mr-sm">
                 <img src="https://cdn.quasar.dev/img/avatar4.jpg" />
               </q-avatar>
             </template>
@@ -76,14 +77,15 @@
                   icon="fa-solid fa-retweet"
                 />
                 <q-btn
+                  @click="toggleLiked(qweet)"
                   flat
                   round
                   size="sm"
-                  color="grey"
-                  icon="fa-regular fa-heart"
+                  :color="qweet.liked ? 'pink' : 'grey'"
+                  :icon="`${qweet.liked ? 'fa-solid' : 'fa-regular'} fa-heart`"
                 />
                 <q-btn
-                  @click="deleteQweet(qweet.id)"
+                  @click="deleteQweet(qweet)"
                   flat
                   round
                   size="sm"
@@ -109,6 +111,7 @@ import {
   doc,
   addDoc,
   deleteDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 
@@ -132,6 +135,7 @@ export default {
       let newQweet = {
         content: this.newQweetContent,
         date: Date.now(),
+        liked: false,
       };
 
       try {
@@ -142,11 +146,22 @@ export default {
 
       this.newQweetContent = "";
     },
-    async deleteQweet(id) {
+    async deleteQweet(qweet) {
       try {
-        await deleteDoc(doc(db, "qweets", id));
+        await deleteDoc(doc(db, "qweets", qweet.id));
       } catch (error) {
         console.error("Error removing data: ", error);
+      }
+    },
+    async toggleLiked(qweet) {
+      const qweetRef = doc(db, "qweets", qweet.id);
+
+      try {
+        await updateDoc(qweetRef, {
+          liked: !qweet.liked,
+        });
+      } catch (error) {
+        console.error('Error updating data: ", error"');
       }
     },
   },
@@ -165,6 +180,10 @@ export default {
           }
           if (change.type === "modified") {
             console.log("Modified qweet: ", qweetChange);
+            const qweet = this.qweets.find(
+              (qweet) => qweet.id === qweetChange.id
+            );
+            Object.assign(qweet, qweetChange);
           }
           if (change.type === "removed") {
             console.log("Removed qweet: ", qweetChange);
